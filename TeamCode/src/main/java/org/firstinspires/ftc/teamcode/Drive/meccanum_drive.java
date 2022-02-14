@@ -1,7 +1,7 @@
 // Mecanum drive using gamepad
 // reference : https://gm0.org/en/latest/docs/software/mecanum-drive.html
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Drive;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
