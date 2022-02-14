@@ -3,31 +3,30 @@ package org.firstinspires.ftc.teamcode.Drive;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 @TeleOp
-public class MecanumDrive extends OpMode {
+public class MecanumDrive{
     //creating and initializing four dc motor objects for all the drive motors on robot
     private DcMotor frontLeftMotor = null;
     private DcMotor backLeftMotor = null;
     private DcMotor frontRightMotor = null;
     private DcMotor backRightMotor = null;
 
-    @Override
-    public void init() {
+    public void init(HardwareMap hwMap) {
         //hardware mapping dc motors to configuration files
-        frontLeftMotor = hardwareMap.dcMotor.get("FrontLeft");
-        backLeftMotor = hardwareMap.dcMotor.get("BackLeft");
-        frontRightMotor = hardwareMap.dcMotor.get("FrontRight");
-        backRightMotor = hardwareMap.dcMotor.get("BackRight");
+        frontLeftMotor = hwMap.dcMotor.get("FrontLeft");
+        backLeftMotor = hwMap.dcMotor.get("BackLeft");
+        frontRightMotor = hwMap.dcMotor.get("FrontRight");
+        backRightMotor = hwMap.dcMotor.get("BackRight");
 
         //setting both the right motors in reverse direction
         frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
         backRightMotor.setDirection(DcMotor.Direction.REVERSE);
     }
 
-
-    @Override
-    public void loop() {
+    public void robotCentricDrive(Gamepad gamepad1) {
 
         //controlling mecanum drive with gamepad1 left and right joystick
         double drive = gamepad1.left_stick_y;          //drive front or back
