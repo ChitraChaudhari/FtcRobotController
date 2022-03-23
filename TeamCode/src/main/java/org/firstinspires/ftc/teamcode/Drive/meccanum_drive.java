@@ -25,7 +25,7 @@ public class meccanum_drive extends OpMode {
         backRightMotor = hardwareMap.dcMotor.get("backRightMotor");
 
         //setting both the front right only motor in reverse direction
-        frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
+        frontLeftMotor.setDirection(DcMotor.Direction.REVERSE);
     }
 
     @Override
@@ -33,7 +33,7 @@ public class meccanum_drive extends OpMode {
 
         //controlling mecanum drive with gamepad1 left and right joystick
         double drive = gamepad1.left_stick_y;          //drive front or back
-        double strafe = gamepad1.left_stick_x * 1.1;    //drive right or left
+        double strafe = -(gamepad1.left_stick_x * 1.1);    //drive right or left
         //multiplying the left X value by 1.1 to
         // counteract imperfect strafing.
         double turn = gamepad1.right_stick_x;           //turn clockwise or anticlockwise
