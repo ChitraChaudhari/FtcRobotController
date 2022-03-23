@@ -1,11 +1,17 @@
+/** This is the code used for the field-centric driving tutorial
+ This is by no means a perfect code
+ There are a number of improvements that can be made
+ So, feel free to add onto this and make it better
+ */
+
 package org.firstinspires.ftc.teamcode.Drive;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
@@ -16,24 +22,27 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 
-@TeleOp
+import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
+
+@TeleOp(name = "fieldCentricDrive")
 public class FieldCentricDrive extends LinearOpMode {
 
-    //creating and initializing four dc motor objects for all the drive motors on robot
-    private DcMotor frontLeftMotor = null;
-    private DcMotor backLeftMotor = null;
-    private DcMotor frontRightMotor = null;
-    private DcMotor backRightMotor = null;
+    private DcMotor frontLeft;
+    private DcMotor frontRight;
+    private DcMotor backRight;
+    private DcMotor backLeft;
 
-    //imu variable
-    private BNO055IMU imu;
+    public BNO055IMU imu;
 
     Orientation angles;
     Acceleration gravity;
 
     @Override
     public void runOpMode() {
+
         double driveTurn;
+        //double driveVertical;
+        //double driveHorizontal;
 
         double gamepadXCoordinate;
         double gamepadYCoordinate;
@@ -44,57 +53,74 @@ public class FieldCentricDrive extends LinearOpMode {
         double gamepadXControl;
         double gamepadYControl;
 
+        frontLeft = hardwareMap.dcMotor.get("frontLeftMotor");
+        frontRight = hardwareMap.dcMotor.get("frontRightMotor");
+        backRight = hardwareMap.dcMotor.get("backRightMotor");
+        backLeft = hardwareMap.dcMotor.get("backLeftMotor");
 
-        //hardware mapping dc motors to configuration files
-        frontLeftMotor = hardwareMap.dcMotor.get("FrontLeft");
-        backLeftMotor = hardwareMap.dcMotor.get("BackLeft");
-        frontRightMotor = hardwareMap.dcMotor.get("FrontRight");
-        backRightMotor = hardwareMap.dcMotor.get("BackRight");
+        //might need to change the motors being reversed
+        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        //backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        //setting both the right motors in reverse direction
-        frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
-        backRightMotor.setDirection(DcMotor.Direction.REVERSE);
-
-        // Set up the parameters with which we will use our IMU.
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json";
         parameters.loggingEnabled = true;
         parameters.loggingTag = "IMU";
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
 
-        // Retrieve and initialize the IMU.
+        /**
+         * make sure you've configured your imu properly and with the correct device name
+         */
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
 
-        // Set up our telemetry dashboard
         composeTelemetry();
 
         waitForStart();
 
         imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
 
+
         while (opModeIsActive()) {
-            driveTurn = gamepad1.left_stick_x;
-            gamepadXCoordinate = gamepad1.right_stick_x;
-            gamepadYCoordinate = -gamepad1.right_stick_y;
-            gamepadHypot = Range.clip(Math.hypot(gamepadXCoordinate,gamepadYCoordinate),0,1);
+            driveTurn = -gamepad1.right_stick_x;
+            //driveVertical = -gamepad1.right_stick_y;
+            //driveHorizontal = gamepad1.right_stick_x;
 
-            gamepadDegree = Math.atan2(gamepadXCoordinate,gamepadYCoordinate);
-
+            gamepadXCoordinate = gamepad1.left_stick_x; //this simply gives our x value relative to the driver
+            gamepadYCoordinate = -gamepad1.left_stick_y; //this simply gives our y vaue relative to the driver
+            gamepadHypot = Range.clip(Math.hypot(gamepadXCoordinate, gamepadYCoordinate), 0, 1);
+            //finds just how much power to give the robot based on how much x and y given by gamepad
+            //range.clip helps us keep our power within positive 1
+            // also helps set maximum possible value of 1/sqrt(2) for x and y controls if at a 45 degree angle (which yields greatest possible value for y+x)
+            gamepadDegree = Math.atan2(gamepadYCoordinate, gamepadXCoordinate);
+            //the inverse tangent of opposite/adjacent gives us our gamepad degree
             robotDegree = getAngle();
-
+            //gives us the angle our robot is at
             movementDegree = gamepadDegree - robotDegree;
-
+            //adjust the angle we need to move at by finding needed movement degree based on gamepad and robot angles
             gamepadXControl = Math.cos(Math.toRadians(movementDegree)) * gamepadHypot;
-
+            //by finding the adjacent side, we can get our needed x value to power our motors
             gamepadYControl = Math.sin(Math.toRadians(movementDegree)) * gamepadHypot;
+            //by finding the opposite side, we can get our needed y value to power our motors
 
-            frontRightMotor.setPower(gamepadYControl*Math.abs(gamepadYControl) - gamepadXControl*Math.abs(gamepadXControl) + driveTurn);
-            backRightMotor.setPower(gamepadYControl*Math.abs(gamepadYControl) + gamepadXControl*Math.abs(gamepadXControl) + driveTurn);
-            frontLeftMotor.setPower(gamepadYControl*Math.abs(gamepadYControl) + gamepadXControl*Math.abs(gamepadXControl) - driveTurn);
-            backLeftMotor.setPower(gamepadYControl*Math.abs(gamepadYControl) - gamepadXCoordinate*Math.abs(gamepadXControl)-driveTurn);
+            /**
+             * again, make sure you've changed the motor names and variables to fit your team
+             */
+
+            //by mulitplying the gamepadYControl and gamepadXControl by their respective absolute values, we can guarantee that our motor powers will not exceed 1 without any driveTurn
+            //since we've maxed out our hypot at 1, the greatest possible value of x+y is (1/sqrt(2)) + (1/sqrt(2)) = sqrt(2)
+            //since (1/sqrt(2))^2 = 1/2 = .5, we know that we will not exceed a power of 1 (with no turn), giving us more precision for our driving
+            frontRight.setPower(gamepadYControl * Math.abs(gamepadYControl) - gamepadXControl * Math.abs(gamepadXControl) + driveTurn);
+            backRight.setPower(gamepadYControl * Math.abs(gamepadYControl) + gamepadXControl * Math.abs(gamepadXControl) + driveTurn);
+            frontLeft.setPower(gamepadYControl * Math.abs(gamepadYControl) + gamepadXControl * Math.abs(gamepadXControl) - driveTurn);
+            backLeft.setPower(gamepadYControl * Math.abs(gamepadYControl) - gamepadXControl * Math.abs(gamepadXControl) - driveTurn);
+
+            /*frontRight.setPower(driveVertical - driveHorizontal + driveTurn);
+            backRight.setPower(driveVertical + driveHorizontal + driveTurn);
+            frontLeft.setPower(driveVertical + driveHorizontal - driveTurn);
+            backLeft.setPower(driveVertical - driveHorizontal - driveTurn);*/
         }
         telemetry.update();
     }
@@ -114,3 +140,4 @@ public class FieldCentricDrive extends LinearOpMode {
         return imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
     }
 }
+
