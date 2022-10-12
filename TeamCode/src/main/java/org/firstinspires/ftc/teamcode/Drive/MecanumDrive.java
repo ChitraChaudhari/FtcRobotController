@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-@Disabled
+
 @TeleOp
 public class MecanumDrive extends OpMode{
     //creating and initializing four dc motor objects for all the drive motors on robot
