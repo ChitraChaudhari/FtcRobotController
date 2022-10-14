@@ -18,6 +18,8 @@ public class MecanumDrive extends OpMode{
     @Override
     public void init() {
         //hardware mapping dc motors to configuration files
+        /** Make sure the names of the devices are correct */
+        
         frontLeftMotor = hardwareMap.dcMotor.get("FrontLeft");
         backLeftMotor = hardwareMap.dcMotor.get("BackLeft");
         frontRightMotor = hardwareMap.dcMotor.get("FrontRight");
@@ -31,6 +33,8 @@ public class MecanumDrive extends OpMode{
     @Override
     public void loop() {
 
+        /** This seems to be fine, but make sure test it with the new chassis */
+        
         //controlling mecanum drive with gamepad1 left and right joystick
         double drive = gamepad1.left_stick_y;          //drive front or back
         double strafe = gamepad1.left_stick_x * 1.1;    //drive right or left
